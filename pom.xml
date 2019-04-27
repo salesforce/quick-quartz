@@ -2,12 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.1.4.RELEASE</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
 	<groupId>com.salesforce.zero</groupId>
 	<artifactId>quick-quartz</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
@@ -17,44 +11,37 @@
 	<properties>
 		<java.version>1.8</java.version>
 		<kotlin.version>1.3.30</kotlin.version>
-		<!-- skip integration tests by default -->
-        	<skip.it>true</skip.it>
-       		<maven-failsafe-plugin.version>3.0.0-M3</maven-failsafe-plugin.version>
-        	<maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.jetbrains.kotlin</groupId>
 			<artifactId>kotlin-reflect</artifactId>
+			<version>LATEST</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jetbrains.kotlin</groupId>
 			<artifactId>kotlin-stdlib-jdk8</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
+			<version>LATEST</version>
 		</dependency>
 	</dependencies>
 
 	<build>
-		<sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
+		<sourceDirectory>src/main/kotlin</sourceDirectory>
 		<testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
 		<plugins>
 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
 				<groupId>org.jetbrains.kotlin</groupId>
 				<artifactId>kotlin-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>compile</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+					</execution>
+				</executions>
 				<configuration>
 					<args>
 						<arg>-Xjsr305=strict</arg>
@@ -70,6 +57,22 @@
 						<version>${kotlin.version}</version>
 					</dependency>
 				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>com.diffplug.spotless</groupId>
+				<artifactId>spotless-maven-plugin</artifactId>
+				<version>1.23.0</version>
+				<configuration>
+					<kotlin>
+						<licenseHeader>
+							<file>${project.basedir}/license-header</file>
+						</licenseHeader>
+						<trimTrailingWhitespace/>
+						<ktlint>
+							<version>0.32.0</version>
+						</ktlint>
+					</kotlin>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
