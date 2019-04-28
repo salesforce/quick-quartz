@@ -13,10 +13,10 @@ import java.sql.ResultSet
 import javax.sql.DataSource
 
 /**
- * tests can use spring to bootstrap an in-memory database with liquibase
+ * tests can use spring to bootstrap a transient database with liquibase
  */
 @SpringBootTest
-class H2Tests {
+class PgTests {
 
     @Autowired lateinit var db: DataSource
     @Autowired lateinit var sample: SampleBean
@@ -27,10 +27,17 @@ class H2Tests {
     }
 
     @Test
-    fun h2() {
+    fun pg() {
         db.connection.use { conn ->
             conn.createStatement().use { stmt ->
-                stmt.executeQuery("select bar from foo").use { rs ->
+                // verify that we are using postgres 10.6
+                stmt.executeQuery("select version()").use { rs ->
+                    val list = rs.toResultsList { getString(1) }
+                    assertThat(list[0]).contains("PostgreSQL 10.6")
+                }
+
+                // verify pg syntax works
+                stmt.executeQuery("select bar from foo FOR UPDATE SKIP LOCKED").use { rs ->
                     val list = rs.toResultsList { getString("bar") }
                     assertThat(list.size).isEqualTo(1)
                     assertThat(list[0]).isEqualTo("from liquibase")

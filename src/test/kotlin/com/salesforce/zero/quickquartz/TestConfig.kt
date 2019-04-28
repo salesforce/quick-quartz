@@ -5,6 +5,7 @@
  */
 package com.salesforce.zero.quickquartz
 
+import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -24,13 +25,17 @@ class TestConfig {
     @LiquibaseDataSource
     @Bean
     fun testDb(): DataSource {
+        // it's not actually an embedded db, but naming things is hard - thx, opentable!
+        val pg = EmbeddedPostgres.builder()
+            // .setPgBinaryResolver(pgBinaryResolver)           // TODO pg 11
+            .start()
+
         val config = HikariConfig()
-        config.jdbcUrl = "jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"
-        config.username = "sa"
-        config.password = ""
-        config.driverClassName = "org.h2.Driver"
+        config.dataSource = pg.postgresDatabase
+        config.driverClassName = "org.postgresql.Driver"
         config.maximumPoolSize = 4
         config.poolName = "testdb"
+        config.isAutoCommit = false
 
         return HikariDataSource(config)
     }
