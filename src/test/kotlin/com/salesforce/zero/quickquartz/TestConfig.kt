@@ -8,10 +8,12 @@ package com.salesforce.zero.quickquartz
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import org.quartz.Scheduler
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseDataSource
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import java.util.Properties
 import javax.sql.DataSource
 
 /**
@@ -38,6 +40,22 @@ class TestConfig {
         config.isAutoCommit = false
 
         return HikariDataSource(config)
+    }
+
+    private val properties: Properties
+        get() {
+            val quartzProps = Properties()
+            quartzProps["org.quartz.jobStore.class"] = "com.salesforce.zero.quickquartz.QuickQuartz"
+
+            quartzProps["org.quartz.threadPool.threadCount"] = "2"
+            quartzProps["org.quartz.scheduler.batchTriggerAcquisitionMaxCount"] = "2"
+            quartzProps["org.quartz.scheduler.instanceId"] = "AUTO"
+            return quartzProps
+        }
+
+    @Bean
+    fun scheduler(): Scheduler {
+        return QuickQuartzSchedulerFactory(testDb(), properties).scheduler
     }
 
     @Bean

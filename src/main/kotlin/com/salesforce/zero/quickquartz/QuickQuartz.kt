@@ -18,16 +18,25 @@ import org.quartz.spi.OperableTrigger
 import org.quartz.spi.SchedulerSignaler
 import org.quartz.spi.TriggerFiredResult
 import org.slf4j.LoggerFactory
+import javax.sql.DataSource
 
 class QuickQuartz : JobStore, TablePrefixAware {
     companion object {
         private val logger = LoggerFactory.getLogger(QuickQuartz::class.java)
     }
 
+    private lateinit var db: QuickQuartzDb
     private lateinit var instanceId: String
     private lateinit var instanceName: String
     private lateinit var tablePrefix: String
     private var poolSize: Int = 4
+
+    /**
+     * Needs to be called prior to scheduler initialization
+     */
+    fun initializeQuickQuartzDb(dataSource: DataSource) {
+        this.db = QuickQuartzDb(dataSource)
+    }
 
     /**
      * Inform the `JobStore` that the scheduler no longer plans to
@@ -698,9 +707,8 @@ class QuickQuartz : JobStore, TablePrefixAware {
      * used, in order to give the it a chance to initialize.
      */
     override fun initialize(loadHelper: ClassLoadHelper?, signaler: SchedulerSignaler?) {
-        // FIXME
-        logger.warn("empty initialization - FIXME")
-        // TODO("not implemented")
+        if (this.db == null) throw KotlinNullPointerException("lateinit var db not initialized")
+        logger.info("QuickQuartz running against ${db.readPgVersion()}")
     }
 
     /**

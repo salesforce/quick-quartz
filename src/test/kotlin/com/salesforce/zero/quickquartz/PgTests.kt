@@ -7,9 +7,11 @@ package com.salesforce.zero.quickquartz
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import java.sql.ResultSet
 import javax.sql.DataSource
 
 /**
@@ -45,15 +47,28 @@ class PgTests {
             }
         }
     }
-}
 
-/**
- * a handy extension function that applies the given lambda fn to each row in the resultSet and transforms it into a list
- * think: Iterables.transform() except that ResultSet is not an iterable :)
- */
-inline fun <T> ResultSet.toResultsList(fn: ResultSet.() -> T): List<T> =
-    mutableListOf<T>().apply {
-        while (next()) {
-            add(fn(this@toResultsList))
+    @ParameterizedTest
+    @MethodSource("tables")
+    fun tablesExist(table: String) {
+        println("asked to look at table $table")
+        db.connection.use { conn ->
+            conn.prepareStatement("select count(*) from pg_stat_user_tables where relname = ?").apply {
+                setString(1, table)
+            }.executeQuery().use {rs ->
+                val list = rs.toResultsList { getInt(1) }
+                assertThat(list.size).isEqualTo(1)
+                assertThat(list[0]).isEqualTo(1)
+            }
+
         }
     }
+
+    companion object {
+        @JvmStatic
+        fun tables() = arrayOf(
+            Arguments.of("qrtz_job_details"),
+            Arguments.of("qrtz_triggers")
+        )
+    }
+}
