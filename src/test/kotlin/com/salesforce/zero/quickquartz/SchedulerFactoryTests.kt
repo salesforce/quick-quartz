@@ -5,7 +5,7 @@
  */
 package com.salesforce.zero.quickquartz
 
-import com.google.common.truth.Truth.assertThat
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.quartz.impl.StdSchedulerFactory
 import java.util.Properties
@@ -24,8 +24,9 @@ class SchedulerFactoryTests {
 
     @Test
     fun standardSchedulerFactory() {
-        val schedulerFactory = StdSchedulerFactory(properties)
-        val scheduler = schedulerFactory.scheduler
-        assertThat(scheduler).isNotNull()
+        Assertions.assertThrows(UninitializedPropertyAccessException::class.java) {
+            val schedulerFactory = StdSchedulerFactory(properties)
+            val scheduler = schedulerFactory.scheduler
+        }
     }
 }
