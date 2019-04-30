@@ -5,4 +5,4 @@ install:
 script:
   - mvn test jacoco:report
 after_success:
-  - mvn coveralls:report
+  - bash <(curl -s https://codecov.io/bash)
