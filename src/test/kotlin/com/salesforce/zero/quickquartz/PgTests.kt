@@ -55,12 +55,11 @@ class PgTests {
         db.connection.use { conn ->
             conn.prepareStatement("select count(*) from pg_stat_user_tables where relname = ?").apply {
                 setString(1, table)
-            }.executeQuery().use {rs ->
+            }.executeQuery().use { rs ->
                 val list = rs.toResultsList { getInt(1) }
                 assertThat(list.size).isEqualTo(1)
                 assertThat(list[0]).isEqualTo(1)
             }
-
         }
     }
 
