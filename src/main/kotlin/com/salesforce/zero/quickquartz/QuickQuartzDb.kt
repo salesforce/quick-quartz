@@ -13,6 +13,12 @@ import javax.sql.DataSource
  */
 class QuickQuartzDb(val db: DataSource) {
 
+    init {
+        db.connection.use {
+            if (it.autoCommit) throw Error("please turn off autocommit")
+        }
+    }
+
     /**
      * read the version from the database
      */

@@ -7,3 +7,4 @@ CREATE TABLE foo
 );
 
 insert into foo values ('from liquibase');
+insert into foo values ('bar');
