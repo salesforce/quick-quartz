@@ -6,12 +6,20 @@
 package com.salesforce.zero.quickquartz
 
 import com.google.common.truth.Truth.assertThat
+import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
+import com.zaxxer.hikari.HikariConfig
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import javax.sql.DataSource
 
 /**
@@ -39,13 +47,62 @@ class PgTests {
                 }
 
                 // verify pg syntax works
-                stmt.executeQuery("select bar from foo FOR UPDATE SKIP LOCKED").use { rs ->
+                stmt.executeQuery("select bar from foo where bar = 'from liquibase' FOR UPDATE SKIP LOCKED").use { rs ->
                     val list = rs.toResultsList { getString("bar") }
                     assertThat(list.size).isEqualTo(1)
                     assertThat(list[0]).isEqualTo("from liquibase")
                 }
             }
         }
+    }
+
+    /**
+     * check that QuickQuartzDb fails if you hand it a datasource with autocommit on.
+     */
+    @Test
+    fun testAutocommitIsOff() {
+        // given
+        val autocommitting = HikariConfig()
+        (db as HikariConfig).copyState(autocommitting)
+        autocommitting.isAutoCommit = true
+
+        // QQDb should gack
+        assertThrows<Error> { QuickQuartzDb(autocommitting.dataSource) }
+    }
+
+    /**
+     * check that row level locks work, and that connections who wish to skip past locked rows are able to do so.
+     */
+    @Test
+    fun testRowLocks() {
+        val service = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(2))
+        val futures = mutableListOf<ListenableFuture<List<String>>>()
+        val latch = CountDownLatch(2) // one per thread
+
+        // only one thread should be able to win the row level lock
+        // the other thread should return immediately
+        for (i in 1..2) {
+            futures.add(service.submit<List<String>> {
+                db.connection.use { conn ->
+                    val list = conn.prepareStatement("select * from foo where bar = 'bar' for update skip locked")
+                            .executeQuery().use { rs ->
+                                rs.toResultsList { getString(1) }
+                            }
+                    latch.countDown()
+                    latch.await(5, TimeUnit.SECONDS) // wait for the other thread before rolling back
+                    conn.rollback()
+                    list
+                }
+            })
+        }
+        service.shutdown()
+
+        val successful = Futures.successfulAsList(futures).get()
+        assertThat(successful.size).isEqualTo(2)
+
+        val first = successful[0]
+        val second = successful[1]
+        assertThat((first.isEmpty() && second.size == 1).xor(first.size == 1 && second.isEmpty()))
     }
 
     @ParameterizedTest

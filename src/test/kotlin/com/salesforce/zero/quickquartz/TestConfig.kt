@@ -27,18 +27,15 @@ class TestConfig {
     @LiquibaseDataSource
     @Bean
     fun testDb(): DataSource {
-        // it's not actually an embedded db, but naming things is hard - thx, opentable!
         val pg = EmbeddedPostgres.builder()
-            // .setPgBinaryResolver(pgBinaryResolver)           // TODO pg 11
-            .start()
-
+                // .setPgBinaryResolver(pgBinaryResolver)           // TODO pg 11
+                .start()
         val config = HikariConfig()
         config.dataSource = pg.postgresDatabase
         config.driverClassName = "org.postgresql.Driver"
         config.maximumPoolSize = 4
         config.poolName = "testdb"
         config.isAutoCommit = false
-
         return HikariDataSource(config)
     }
 
