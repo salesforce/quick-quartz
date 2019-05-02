@@ -37,7 +37,7 @@ class PgTests {
     }
 
     @Test
-    fun pg() {
+    fun `check db version and non-ANSI features`() {
         db.connection.use { conn ->
             conn.createStatement().use { stmt ->
                 // verify that we are using postgres 11.2
@@ -60,21 +60,22 @@ class PgTests {
      * check that QuickQuartzDb fails if you hand it a datasource with autocommit on.
      */
     @Test
-    fun testAutocommitIsOff() {
+    fun `assert autocommit is off`() {
         // given
         val autocommitting = HikariConfig()
         (db as HikariConfig).copyState(autocommitting)
         autocommitting.isAutoCommit = true
 
         // QQDb should gack
-        assertThrows<Error> { QuickQuartzDb(autocommitting.dataSource) }
+        val error = assertThrows<Error> { QuickQuartzDb(autocommitting.dataSource) }
+        assertThat(error.message).isEqualTo("please turn off autocommit")
     }
 
     /**
      * check that row level locks work, and that connections who wish to skip past locked rows are able to do so.
      */
     @Test
-    fun testRowLocks() {
+    fun `assert non blocking row locks`() {
         val service = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(2))
         val futures = mutableListOf<ListenableFuture<List<String>>>()
         val latch = CountDownLatch(2) // one per thread
@@ -107,7 +108,7 @@ class PgTests {
 
     @ParameterizedTest
     @MethodSource("tables")
-    fun tablesExist(table: String) {
+    fun `check quartz tables got created by liquibase`(table: String) {
         println("asked to look at table $table")
         db.connection.use { conn ->
             conn.prepareStatement("select count(*) from pg_stat_user_tables where relname = ?").apply {
