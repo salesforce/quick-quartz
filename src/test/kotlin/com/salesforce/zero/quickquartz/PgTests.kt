@@ -40,10 +40,10 @@ class PgTests {
     fun pg() {
         db.connection.use { conn ->
             conn.createStatement().use { stmt ->
-                // verify that we are using postgres 10.6
+                // verify that we are using postgres 11.2
                 stmt.executeQuery("select version()").use { rs ->
                     val list = rs.toResultsList { getString(1) }
-                    assertThat(list[0]).contains("PostgreSQL 10.6")
+                    assertThat(list[0]).contains("PostgreSQL 11.2")
                 }
 
                 // verify pg syntax works

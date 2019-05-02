@@ -6,6 +6,7 @@
 package com.salesforce.zero.quickquartz
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
+import com.opentable.db.postgres.embedded.PgBinaryResolver
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.quartz.Scheduler
@@ -13,6 +14,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseDataSource
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import org.springframework.core.io.ClassPathResource
+import java.io.InputStream
 import java.util.Properties
 import javax.sql.DataSource
 
@@ -28,8 +31,10 @@ class TestConfig {
     @Bean
     fun testDb(): DataSource {
         val pg = EmbeddedPostgres.builder()
-                // .setPgBinaryResolver(pgBinaryResolver)           // TODO pg 11
-                .start()
+            .setServerConfig("timezone", "GMT")
+            .setPgBinaryResolver(Pg11BinaryResolver())
+            .start()
+
         val config = HikariConfig()
         config.dataSource = pg.postgresDatabase
         config.driverClassName = "org.postgresql.Driver"
@@ -62,3 +67,8 @@ class TestConfig {
 }
 
 data class SampleBean(val name: String)
+
+class Pg11BinaryResolver : PgBinaryResolver {
+    override fun getPgBinary(system: String?, machineHardware: String?): InputStream =
+        ClassPathResource("pg11-$system-$machineHardware.txz").inputStream
+}

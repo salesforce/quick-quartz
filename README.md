@@ -26,3 +26,14 @@ fun scheduler(): Scheduler {
 ``` 
 
 Then use the scheduler as you normally would. 
+
+
+## Code style 
+
+We use [ktlint](https://github.com/pinterest/ktlint#-with-intellij-idea). 
+
+```sh
+ktlint --apply-to-idea-project
+```
+
+The `spotless` maven plugin is also configured to use `ktlint`. 
