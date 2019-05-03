@@ -1,6 +1,6 @@
 build:
 	mvn spotless:check
-	mvn package
+	mvn -s settings.xml package
 
 spotless-apply:
 	mvn spotless:apply
