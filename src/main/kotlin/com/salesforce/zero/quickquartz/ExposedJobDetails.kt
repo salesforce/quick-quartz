@@ -76,4 +76,3 @@ fun ResultRow.toJobDetails(): JobDetail = JobDetail(
     requestsRecovery = this[QuickQuartzJobDetails.requestsRecovery],
     jobData = this[QuickQuartzJobDetails.jobData]
 )
-
