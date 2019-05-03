@@ -1,8 +1,8 @@
 language: java
 jdk: oraclejdk8
 install:
-  - mvn spotless:check test-compile -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+  - mvn -s settings.xml spotless:check test-compile -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 script:
-  - mvn test jacoco:report
+  - mvn -s settings.xml test jacoco:report
 after_success:
   - bash <(curl -s https://codecov.io/bash)
