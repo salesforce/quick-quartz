@@ -28,7 +28,7 @@ fun scheduler(): Scheduler {
 Then use the scheduler as you normally would. 
 
 
-## Code style 
+## code style 
 
 We use [ktlint](https://github.com/pinterest/ktlint#-with-intellij-idea). 
 
@@ -37,3 +37,6 @@ ktlint --apply-to-idea-project
 ```
 
 The `spotless` maven plugin is also configured to use `ktlint`. 
+
+## resources
+- [exposed dsl](https://github.com/JetBrains/Exposed/wiki/DSL)
