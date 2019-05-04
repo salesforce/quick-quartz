@@ -173,7 +173,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>${maven-failsafe-plugin.version}</version>
 				<configuration>
-					<argLine>-Duser.timezone=GMT</argLine>
+					<argLine>@{argLine} -Duser.timezone=GMT</argLine>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -181,7 +181,7 @@
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<version>${maven-failsafe-plugin.version}</version>
 				<configuration>
-					<argLine>-Duser.timezone=GMT</argLine>
+					<argLine>@{argLine} -Duser.timezone=GMT</argLine>
 					<skip>${skip.it}</skip>
 				</configuration>
 			</plugin>
