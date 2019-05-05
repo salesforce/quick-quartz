@@ -4,3 +4,9 @@ build:
 
 spotless-apply:
 	mvn spotless:apply
+
+test:
+	mvn -s settings.xml test jacoco:report
+
+view-codecov-report:
+	open target/site/jacoco/index.html

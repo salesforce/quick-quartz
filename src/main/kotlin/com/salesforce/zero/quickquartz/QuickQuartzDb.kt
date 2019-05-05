@@ -5,6 +5,7 @@
  */
 package com.salesforce.zero.quickquartz
 
+import org.jetbrains.exposed.sql.Database
 import java.sql.ResultSet
 import javax.sql.DataSource
 
@@ -17,6 +18,9 @@ class QuickQuartzDb(val db: DataSource) {
         db.connection.use {
             if (it.autoCommit) throw Error("please turn off autocommit")
         }
+
+        // initialize Expose
+        Database.connect(this.db)
     }
 
     /**

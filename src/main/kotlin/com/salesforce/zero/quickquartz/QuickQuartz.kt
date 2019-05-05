@@ -5,6 +5,8 @@
  */
 package com.salesforce.zero.quickquartz
 
+import org.jetbrains.exposed.sql.batchInsert
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.quartz.Calendar
 import org.quartz.JobDetail
 import org.quartz.JobKey
@@ -123,7 +125,9 @@ class QuickQuartz : JobStore, TablePrefixAware {
      * exists.
      */
     override fun storeJobAndTrigger(newJob: JobDetail?, newTrigger: OperableTrigger?) {
-        TODO("not implemented")
+        val job = newJob ?: throw IllegalArgumentException("job was null")
+        val trigger = newTrigger ?: throw IllegalArgumentException("trigger was null")
+        storeJobsAndTriggers(mutableMapOf(job to mutableSetOf(trigger)), replace = false)
     }
 
     /**
@@ -334,7 +338,8 @@ class QuickQuartz : JobStore, TablePrefixAware {
      * exists, and replaceExisting is set to false.
      */
     override fun storeJob(newJob: JobDetail?, replaceExisting: Boolean) {
-        TODO("not implemented")
+        val job = newJob ?: throw IllegalArgumentException("job was null")
+        storeJobsAndTriggers(mutableMapOf(job to mutableSetOf()), replace = false)
     }
 
     override fun removeTriggers(triggerKeys: MutableList<TriggerKey>?): Boolean {
@@ -399,11 +404,25 @@ class QuickQuartz : JobStore, TablePrefixAware {
         TODO("not implemented")
     }
 
-    override fun storeJobsAndTriggers(
-        triggersAndJobs: MutableMap<JobDetail, MutableSet<out Trigger>>?,
-        replace: Boolean
-    ) {
-        TODO("not implemented")
+    override fun storeJobsAndTriggers(triggersAndJobs: MutableMap<JobDetail, MutableSet<out Trigger>>?, replace: Boolean) {
+        triggersAndJobs?.apply {
+
+            val jobDetails = this.keys
+            val qqJobs = jobDetails.map { it.toQuickQuartzJob() }
+
+            val triggers = this.values.flatten()
+            val qqTriggers: Iterable<TriggerEntity> = triggers.map { it.toQuickQuartzTrigger() }
+
+            transaction {
+                // insert parent rows
+                QuickQuartzJobDetails.batchInsert(data = qqJobs, body = batchInsertJobs)
+
+                // insert child rows
+                QuickQuartzTriggers.batchInsert(data = qqTriggers, body = batchInsertTriggers)
+            }
+        }
+
+        // TODO("handle the replace param?")
     }
 
     /**
