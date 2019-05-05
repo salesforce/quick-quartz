@@ -20,7 +20,7 @@
 		<liquibase-core.version>3.6.3</liquibase-core.version>
 		<h2.version>1.4.199</h2.version>
         <junit-jupiter.version>5.5.0-M1</junit-jupiter.version>
-		<truth.version>0.42</truth.version>
+		<truth.version>0.44</truth.version>
 		<spotless-maven-plugin.version>1.23.0</spotless-maven-plugin.version>
 		<ktlint.version>0.32.0</ktlint.version>
 		<jacoco-maven-plugin.version>0.8.1</jacoco-maven-plugin.version>
