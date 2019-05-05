@@ -5,8 +5,6 @@
     - get rid of `schedName` from PKs
     - reorder to make `jobGroup` | `triggerGroup` the leading key component
     - prune indexes
-- Serialization 
-    - need fast baos
 - Storing jobs
     - handle the replace param when storing 
     - test with payloads on the triggers instead of on the job

@@ -8,14 +8,13 @@ package com.salesforce.zero.quickquartz
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
-import java.io.ByteArrayOutputStream
 
 object QuickSerializer {
     val kryo = Kryo()
 
     fun serialize(data: Any?): ByteArray? {
         if (data == null) return null
-        val output = Output(ByteArrayOutputStream()) // TODO need faster baos :(
+        val output = Output(YetAnotherFastByteArrayOutputStream())
         output.use {
             kryo.writeObject(output, data)
             return output.toBytes()
