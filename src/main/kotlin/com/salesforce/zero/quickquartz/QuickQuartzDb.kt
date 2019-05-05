@@ -12,7 +12,7 @@ import javax.sql.DataSource
 /**
  * One stop shop for all db behavior
  */
-class QuickQuartzDb(val db: DataSource) {
+class QuickQuartzDb(private val db: DataSource) {
 
     init {
         db.connection.use {

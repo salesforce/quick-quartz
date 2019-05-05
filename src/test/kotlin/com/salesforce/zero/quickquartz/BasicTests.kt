@@ -89,6 +89,16 @@ class BasicTests {
         assertThat(t1).isNotEqualTo(t3)
     }
 
+    @Test
+    fun `fast baos`() {
+        val fastBaos = YetAnotherFastByteArrayOutputStream(4)
+        val test = "hello, world!".toByteArray(Charsets.UTF_8)
+
+        fastBaos.write(test)
+
+        assertThat(fastBaos.toByteArray()).isEqualTo(test)
+    }
+
     companion object {
         @JvmStatic
         fun payloads() = arrayOf(

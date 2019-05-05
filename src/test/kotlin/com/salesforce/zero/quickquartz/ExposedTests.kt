@@ -13,15 +13,11 @@ import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import java.util.UUID
-import javax.sql.DataSource
 
 @SpringBootTest
 class ExposedTests {
-    @Autowired
-    lateinit var db: DataSource
 
     @Test
     fun `bulk insert job details`() {
