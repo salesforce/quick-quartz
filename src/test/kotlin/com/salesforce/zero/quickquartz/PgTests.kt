@@ -103,7 +103,7 @@ class PgTests {
 
         val first = successful[0]
         val second = successful[1]
-        assertThat((first.isEmpty() && second.size == 1).xor(first.size == 1 && second.isEmpty()))
+        assertThat((first.isEmpty() && second.size == 1).xor(first.size == 1 && second.isEmpty())).isTrue()
     }
 
     @ParameterizedTest
