@@ -28,6 +28,20 @@ import org.quartz.Trigger
 import java.util.Objects
 
 /**
+ * the legal states a trigger row can be in
+ */
+enum class TriggerState {
+    WAITING // that's all for now, folks!
+}
+
+/**
+ * trigger types
+ */
+enum class TriggerTypes {
+    SIMPLE, CRON
+}
+
+/**
  * schema for the main Trigger entity
  */
 object QuickQuartzTriggers : Table("qrtz_triggers") {
@@ -65,11 +79,11 @@ data class TriggerEntity(
 
     val description: String? = null,
     val nextFireTime: Long? = null,
-    val prevFireTime: Long? = null,
+    val prevFireTime: Long? = -1,   // this is the quartz jdbc default
     val priority: Int? = null,
 
-    val triggerState: String = "",
-    val triggerType: String = "",
+    val triggerState: String = TriggerState.WAITING.name,
+    val triggerType: String = TriggerTypes.SIMPLE.name,
     val startTime: Long = System.currentTimeMillis(),
     val endTime: Long = System.currentTimeMillis(),
 
