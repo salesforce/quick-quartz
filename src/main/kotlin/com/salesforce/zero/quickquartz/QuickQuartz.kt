@@ -5,8 +5,6 @@
  */
 package com.salesforce.zero.quickquartz
 
-import org.jetbrains.exposed.sql.batchInsert
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.quartz.Calendar
 import org.quartz.JobDetail
 import org.quartz.JobKey

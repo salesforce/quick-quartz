@@ -79,7 +79,7 @@ data class TriggerEntity(
 
     val description: String? = null,
     val nextFireTime: Long? = null,
-    val prevFireTime: Long? = -1,   // this is the quartz jdbc default
+    val prevFireTime: Long? = -1, // this is the quartz jdbc default
     val priority: Int? = null,
 
     val triggerState: String = TriggerState.WAITING.name,
