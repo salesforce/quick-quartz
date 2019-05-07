@@ -6,6 +6,8 @@
 package com.salesforce.zero.quickquartz
 
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.batchInsert
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.ResultSet
 import javax.sql.DataSource
 
@@ -35,6 +37,19 @@ class QuickQuartzDb(private val db: DataSource) {
                     return list[0]
                 }
             }
+        }
+    }
+
+    /**
+     * persist jobs and associated triggers in bulk
+     */
+    fun batchInsertJobsAndDetails(qqJobs: List<JobDetailEntity>, qqTriggers: Iterable<TriggerEntity>) {
+        transaction {
+            // insert parent rows
+            QuickQuartzJobDetails.batchInsert(data = qqJobs, body = batchInsertJobs)
+
+            // insert child rows
+            QuickQuartzTriggers.batchInsert(data = qqTriggers, body = batchInsertTriggers)
         }
     }
 }

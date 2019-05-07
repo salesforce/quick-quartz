@@ -413,13 +413,7 @@ class QuickQuartz : JobStore, TablePrefixAware {
             val triggers = this.values.flatten()
             val qqTriggers: Iterable<TriggerEntity> = triggers.map { it.toQuickQuartzTrigger() }
 
-            transaction {
-                // insert parent rows
-                QuickQuartzJobDetails.batchInsert(data = qqJobs, body = batchInsertJobs)
-
-                // insert child rows
-                QuickQuartzTriggers.batchInsert(data = qqTriggers, body = batchInsertTriggers)
-            }
+            db.batchInsertJobsAndDetails(qqJobs, qqTriggers)
         }
 
         // TODO("handle the replace param?")
