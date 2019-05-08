@@ -25,7 +25,6 @@ import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.statements.BatchInsertStatement
 import org.quartz.Trigger
-import java.util.Objects
 
 /**
  * the legal states a trigger row can be in
