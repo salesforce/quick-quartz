@@ -59,7 +59,7 @@ class EndToEndTests {
         val jobToTriggers = genQuartzJobs(prefix)
         val job = jobToTriggers.keys.elementAt(0)
 
-        scheduler.addJob(job, true)
+        scheduler.addJob(job, false)
 
         transaction {
             val list = QuickQuartzJobDetails.select { QuickQuartzJobDetails.jobName like "$prefix%" }.map { it.toJob() }

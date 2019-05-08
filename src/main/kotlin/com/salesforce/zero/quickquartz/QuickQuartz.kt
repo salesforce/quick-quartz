@@ -337,7 +337,7 @@ class QuickQuartz : JobStore, TablePrefixAware {
      */
     override fun storeJob(newJob: JobDetail?, replaceExisting: Boolean) {
         val job = newJob ?: throw IllegalArgumentException("job was null")
-        storeJobsAndTriggers(mutableMapOf(job to mutableSetOf()), replaceExisting = false)
+        storeJobsAndTriggers(mutableMapOf(job to mutableSetOf()), replaceExisting = replaceExisting)
     }
 
     override fun removeTriggers(triggerKeys: MutableList<TriggerKey>?): Boolean {
