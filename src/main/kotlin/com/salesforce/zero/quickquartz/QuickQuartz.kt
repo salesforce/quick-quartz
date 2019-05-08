@@ -125,7 +125,7 @@ class QuickQuartz : JobStore, TablePrefixAware {
     override fun storeJobAndTrigger(newJob: JobDetail?, newTrigger: OperableTrigger?) {
         val job = newJob ?: throw IllegalArgumentException("job was null")
         val trigger = newTrigger ?: throw IllegalArgumentException("trigger was null")
-        storeJobsAndTriggers(mutableMapOf(job to mutableSetOf(trigger)), replace = false)
+        storeJobsAndTriggers(mutableMapOf(job to mutableSetOf(trigger)), replaceExisting = false)
     }
 
     /**
@@ -337,7 +337,7 @@ class QuickQuartz : JobStore, TablePrefixAware {
      */
     override fun storeJob(newJob: JobDetail?, replaceExisting: Boolean) {
         val job = newJob ?: throw IllegalArgumentException("job was null")
-        storeJobsAndTriggers(mutableMapOf(job to mutableSetOf()), replace = false)
+        storeJobsAndTriggers(mutableMapOf(job to mutableSetOf()), replaceExisting = false)
     }
 
     override fun removeTriggers(triggerKeys: MutableList<TriggerKey>?): Boolean {
@@ -402,7 +402,9 @@ class QuickQuartz : JobStore, TablePrefixAware {
         TODO("not implemented")
     }
 
-    override fun storeJobsAndTriggers(triggersAndJobs: MutableMap<JobDetail, MutableSet<out Trigger>>?, replace: Boolean) {
+    override fun storeJobsAndTriggers(triggersAndJobs: MutableMap<JobDetail, MutableSet<out Trigger>>?, replaceExisting: Boolean) {
+        if (replaceExisting) TODO("batch upsert not implemented")
+
         triggersAndJobs?.apply {
 
             val jobDetails = this.keys
@@ -413,8 +415,6 @@ class QuickQuartz : JobStore, TablePrefixAware {
 
             db.batchInsertJobsAndDetails(qqJobs, qqTriggers)
         }
-
-        // TODO("handle the replace param?")
     }
 
     /**

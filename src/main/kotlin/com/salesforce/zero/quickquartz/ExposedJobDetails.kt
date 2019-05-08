@@ -36,7 +36,7 @@ object QuickQuartzJobDetails : Table("qrtz_job_details") {
     val isNonConcurrent = bool("is_nonconcurrent")
     val isUpdateData = bool("is_update_data")
     val requestsRecovery = bool("requests_recovery")
-    val jobData = binary("job_data", ONE_MiB).nullable()
+    val jobData = jsonb<Map<String, String>>("job_data").nullable()
 }
 
 /**
@@ -52,7 +52,7 @@ data class JobDetailEntity(
     val isNonConcurrent: Boolean = false,
     val isUpdateData: Boolean = false,
     val requestsRecovery: Boolean = false,
-    val jobData: ByteArray? = null
+    val jobData: Map<String, String>? = null
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -125,6 +125,8 @@ fun ResultRow.toJob(): JobDetailEntity = JobDetailEntity(
  * maps quartz jobs to quick quartz jobs
  */
 val toQuickQuartzJob: JobDetail.() -> JobDetailEntity = {
+    val jobData = jobDataMap.takeUnless { it.isEmpty() }?.wrappedMap
+
     JobDetailEntity(
         jobName = key.name,
         jobGroup = key.group,
@@ -134,12 +136,6 @@ val toQuickQuartzJob: JobDetail.() -> JobDetailEntity = {
         isNonConcurrent = isConcurrentExectionDisallowed,
         isUpdateData = isPersistJobDataAfterExecution,
         requestsRecovery = requestsRecovery(),
-        /**
-         * ugh we can't just assign the jobDataMap property because
-         * JobDetail.getJobDataMap() returns a _new map_ if the data is null...
-         * which will screw with serialization! so instead, only take the data if it's not empty.
-         * @see org.quartz.impl.JobDetailImpl.getJobDataMap
-         */
-        jobData = QuickSerializer.serialize(jobDataMap.takeUnless { it.isEmpty() })
+        jobData = if (jobData == null) null else jobData as Map<String, String> // quartz api claims this is a Map<String, Object>, but in practice this ends up as a Map<String, String>.
     )
 }

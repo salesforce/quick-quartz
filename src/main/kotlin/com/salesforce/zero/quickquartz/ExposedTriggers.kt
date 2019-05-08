@@ -64,7 +64,7 @@ object QuickQuartzTriggers : Table("qrtz_triggers") {
 
     val calendarName = varchar("calendar_name", 200).nullable()
     val misfireInstr = integer("misfire_instr").nullable()
-    val jobData = binary("job_data", ONE_MiB).nullable()
+    val jobData = jsonb<Map<String, String>>("job_data").nullable()
 }
 
 /**
@@ -89,7 +89,7 @@ data class TriggerEntity(
 
     val calendarName: String? = null,
     val misfireInstr: Int? = null,
-    val jobData: ByteArray? = null
+    val jobData: Map<String, String>? = null
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -183,6 +183,8 @@ fun ResultRow.toTrigger(): TriggerEntity = TriggerEntity(
  * maps a quartz Trigger to TriggerEntity
  */
 val toQuickQuartzTrigger: Trigger.() -> TriggerEntity = {
+    val jobData = jobDataMap.takeUnless { it.isEmpty() }?.wrappedMap
+
     TriggerEntity(
         triggerName = this.key.name,
         triggerGroup = this.key.group,
@@ -192,15 +194,12 @@ val toQuickQuartzTrigger: Trigger.() -> TriggerEntity = {
         nextFireTime = this.nextFireTime?.time,
         prevFireTime = this.previousFireTime?.time,
         priority = this.priority,
-        // triggerState = this.     // FIXME how do we get the state?
-        // triggerType =            // FIXME
+        // note that triggerState and triggerType are not supplied by the quartz objects,
+        // and so we leave them to their respective default values.
         startTime = this.startTime.time,
         endTime = this.endTime.time,
         calendarName = this.calendarName,
         misfireInstr = this.misfireInstruction,
-        /**
-         * like job detail, [org.quartz.impl.triggers.AbstractTrigger.getJobDataMap] has the same problem
-         */
-        jobData = QuickSerializer.serialize(this.jobDataMap.takeUnless { it.isEmpty() })
+        jobData = if (jobData == null) null else jobData as Map<String, String>
     )
 }

@@ -32,7 +32,7 @@ class EndToEndTests {
         val prefix = UUID.randomUUID().toString()
 
         // when
-        scheduler.scheduleJobs(genQuartzJobs(prefix), true)
+        scheduler.scheduleJobs(genQuartzJobs(prefix), false)
 
         // then make sure the rows ended up where we sent 'em
         verifyJobsAndTriggers(prefix)
@@ -41,7 +41,7 @@ class EndToEndTests {
     @Test
     fun `schedule single job`() {
         val prefix = UUID.randomUUID().toString()
-        val jobToTriggers = genQuartzJobs(prefix)
+        val jobToTriggers = genQuartzJobs(prefix, payload = mapOf("k1" to "v1"))
         val job = jobToTriggers.keys.elementAt(0)
         val trigger = jobToTriggers[job]?.elementAt(0) ?: fail()
 

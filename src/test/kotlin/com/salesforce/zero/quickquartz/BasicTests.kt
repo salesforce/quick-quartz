@@ -6,6 +6,8 @@
 package com.salesforce.zero.quickquartz
 
 import com.google.common.truth.Truth.assertThat
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -19,38 +21,9 @@ import org.quartz.TriggerBuilder
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.Date
-import kotlin.test.assertNull
 
 class BasicTests {
     private val prefix = BasicTests::class.java.simpleName
-
-    /**
-     * make sure we can de/serialize the quartz JobDataMap
-     *
-     * @see JobDataMap
-     */
-    @Test
-    fun `kryo default field serialization`() {
-        val data = JobDataMap(mapOf(
-            "k1" to "v1",
-            "k2" to "v2"
-        ))
-
-        val bytes = QuickSerializer.serialize(data)
-
-        val deserialized = QuickSerializer.deserialize<JobDataMap>(bytes)
-
-        assertThat(deserialized).isEqualTo(data)
-    }
-
-    /**
-     * we handle null ourselves instead of asking kryo to serialize it
-     */
-    @Test
-    fun `null serialization`() {
-        val bytes = QuickSerializer.serialize(null)
-        assertNull(QuickSerializer.deserialize<JobDataMap>(bytes))
-    }
 
     /**
      * the scheduler instance is going to hand us a list of quartz jobDetails,
@@ -76,7 +49,7 @@ class BasicTests {
     fun `test trigger payload equality`(payload: Map<String, String>?) {
         val triggers = genQuickQuartzJobsWithTriggers(prefix, payload = payload).values.toList()
         triggers.forEach {
-            assertThat(QuickSerializer.deserialize<JobDataMap>(it.jobData)?.wrappedMap).isEqualTo(payload)
+            assertThat(it.jobData).isEqualTo(payload)
         }
     }
 
@@ -84,7 +57,7 @@ class BasicTests {
     fun `simple trigger equality`() {
         val t1 = TriggerEntity(schedName = TEST_SCHEDULER_NAME, triggerName = "t1", triggerGroup = "test", jobGroup = "test", jobName = "j1", startTime = 0, endTime = 0)
         val t2 = TriggerEntity(schedName = TEST_SCHEDULER_NAME, triggerName = "t1", triggerGroup = "test", jobGroup = "test", jobName = "j1", startTime = 0, endTime = 0)
-        val t3 = TriggerEntity(schedName = TEST_SCHEDULER_NAME, triggerName = "t1", triggerGroup = "test", jobGroup = "test", jobName = "j1", startTime = 1, endTime = 1, jobData = "hello".toByteArray())
+        val t3 = TriggerEntity(schedName = TEST_SCHEDULER_NAME, triggerName = "t1", triggerGroup = "test", jobGroup = "test", jobName = "j1", startTime = 1, endTime = 1, jobData = mapOf())
         assertThat(t1).isEqualTo(t2)
         assertThat(t1).isNotEqualTo(t3)
     }
@@ -97,6 +70,17 @@ class BasicTests {
         fastBaos.write(test)
 
         assertThat(fastBaos.toByteArray()).isEqualTo(test)
+    }
+
+    @Test
+    fun `serialize maps with gson`() {
+        val gson = Gson()
+        val map = mapOf("k1" to "v1")
+        val json = gson.toJson(map)
+        val typeOfHashMap = object : TypeToken<Map<String, String>>() {}.type
+
+        val deserialized: Map<String, String> = gson.fromJson(json, typeOfHashMap)
+        assertThat(deserialized).isEqualTo(map)
     }
 
     companion object {
@@ -164,7 +148,7 @@ fun genQuickQuartzJobsWithTriggers(
             jobName = "$prefix-$i",
             jobGroup = "testJobGroup",
             jobClassName = jobClassName,
-            jobData = if (payload == null) null else QuickSerializer.serialize(JobDataMap(payload)),
+            jobData = if (payload == null) null else payload,
             isDurable = true
         )
         val trigger = TriggerEntity(
@@ -173,7 +157,7 @@ fun genQuickQuartzJobsWithTriggers(
             triggerGroup = "testTriggerGroup",
             jobName = "$prefix-$i",
             jobGroup = "testJobGroup",
-            jobData = if (payload == null) null else QuickSerializer.serialize(JobDataMap(payload))
+            jobData = if (payload == null) null else payload
         )
         put(detail, trigger)
     }

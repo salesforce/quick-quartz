@@ -17,6 +17,9 @@ import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.boot.test.context.SpringBootTest
 import java.util.UUID
 import java.util.concurrent.CountDownLatch
@@ -25,6 +28,14 @@ import java.util.concurrent.TimeUnit
 
 @SpringBootTest
 class ExposedTests {
+
+    companion object {
+        @JvmStatic
+        fun payloads() = arrayOf(
+            Arguments.of(null),
+            Arguments.of(mapOf("k1" to "v1"))
+        )
+    }
 
     @Test
     fun `bulk insert job details`() {
@@ -125,5 +136,25 @@ class ExposedTests {
 
         assertWithMessage("first.size = ${first.size}; second.size = ${second.size}")
             .that((first.isEmpty() && second.size == 1).xor(first.size == 1 && second.isEmpty())).isTrue()
+    }
+
+    @ParameterizedTest
+    @MethodSource("payloads")
+    fun `jsonb data types via expose`(payload: Map<String, String>?) {
+        val prefix = UUID.randomUUID().toString()
+        val jobToTriggers = genQuickQuartzJobsWithTriggers(prefix, payload = payload, numEntities = 1)
+
+        transaction {
+            addLogger(StdOutSqlLogger)
+
+            // insert a job with a jsonb payload
+            QuickQuartzJobDetails.batchInsert(jobToTriggers.keys, body = batchInsertJobs)
+
+            // read it back
+            val insertedJobs =
+                QuickQuartzJobDetails.select { QuickQuartzJobDetails.jobName like "$prefix-%" }.map { it.toJob() }
+
+            assertThat(insertedJobs[0].jobData).isEqualTo(payload)
+        }
     }
 }
