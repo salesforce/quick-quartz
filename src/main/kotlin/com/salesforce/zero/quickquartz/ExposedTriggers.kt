@@ -90,37 +90,7 @@ data class TriggerEntity(
     val calendarName: String? = null,
     val misfireInstr: Int? = null,
     val jobData: Map<String, String>? = null
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as TriggerEntity
-
-        return Objects.equals(schedName, other.schedName) &&
-        Objects.equals(triggerName, other.triggerName) &&
-        Objects.equals(triggerGroup, other.triggerGroup) &&
-        Objects.equals(jobName, other.jobName) &&
-        Objects.equals(jobGroup, other.jobGroup) &&
-        Objects.equals(description, other.description) &&
-        Objects.equals(nextFireTime, other.nextFireTime) &&
-        Objects.equals(prevFireTime, other.prevFireTime) &&
-        Objects.equals(priority, other.priority) &&
-        Objects.equals(triggerState, other.triggerState) &&
-        Objects.equals(triggerType, other.triggerType) &&
-        Objects.equals(startTime, other.startTime) &&
-        Objects.equals(endTime, other.endTime) &&
-        Objects.equals(calendarName, other.calendarName) &&
-        Objects.equals(misfireInstr, other.misfireInstr) &&
-        Objects.deepEquals(jobData, other.jobData)
-    }
-
-    override fun hashCode(): Int {
-        return Objects.hash(schedName, triggerName, triggerGroup, jobName, jobGroup,
-            description, nextFireTime, prevFireTime, priority, triggerState, triggerType,
-            startTime, endTime, calendarName, misfireInstr, jobData)
-    }
-}
+)
 
 /**
  * This is a lambda whose receiver (this) is a BatchInsertStatement.

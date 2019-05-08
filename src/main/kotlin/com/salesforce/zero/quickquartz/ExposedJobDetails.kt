@@ -53,29 +53,7 @@ data class JobDetailEntity(
     val isUpdateData: Boolean = false,
     val requestsRecovery: Boolean = false,
     val jobData: Map<String, String>? = null
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as JobDetailEntity
-
-        return Objects.equals(schedName, other.schedName) &&
-        Objects.equals(jobName, other.jobName) &&
-        Objects.equals(jobGroup, other.jobGroup) &&
-        Objects.equals(description, other.description) &&
-        Objects.equals(jobClassName, other.jobClassName) &&
-        Objects.equals(isDurable, other.isDurable) &&
-        Objects.equals(isNonConcurrent, other.isNonConcurrent) &&
-        Objects.equals(isUpdateData, other.isUpdateData) &&
-        Objects.equals(requestsRecovery, other.requestsRecovery) &&
-        Objects.deepEquals(jobData, other.jobData) // this is the reason to override equals/hashcode
-    }
-
-    override fun hashCode(): Int =
-        Objects.hash(schedName, jobName, jobGroup, description, jobClassName,
-            isDurable, isNonConcurrent, isUpdateData, requestsRecovery, jobData)
-}
+)
 
 /**
  * Helper that maps JobDetails onto a sql statement

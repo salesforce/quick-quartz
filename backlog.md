@@ -1,6 +1,3 @@
-- Triggers
-    - need to set state and type when converting from quartz object
-    - see `ExposedTriggersKt#toQuickQuartzTrigger`
 - Simplify schema 
     - get rid of `schedName` from PKs
     - reorder to make `jobGroup` | `triggerGroup` the leading key component
