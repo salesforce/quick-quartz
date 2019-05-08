@@ -63,16 +63,6 @@ class BasicTests {
     }
 
     @Test
-    fun `fast baos`() {
-        val fastBaos = YetAnotherFastByteArrayOutputStream(4)
-        val test = "hello, world!".toByteArray(Charsets.UTF_8)
-
-        fastBaos.write(test)
-
-        assertThat(fastBaos.toByteArray()).isEqualTo(test)
-    }
-
-    @Test
     fun `serialize maps with gson`() {
         val gson = Gson()
         val map = mapOf("k1" to "v1")
