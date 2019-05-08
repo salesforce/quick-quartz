@@ -8,4 +8,7 @@
 - Storing jobs
     - handle the replace param when storing 
     - test with payloads on the triggers instead of on the job
+- Pause/Shutdown
+    - com.salesforce.zero.quickquartz.QuickQuartz.schedulerPaused
+    - com.salesforce.zero.quickquartz.QuickQuartz.shutdown
     
