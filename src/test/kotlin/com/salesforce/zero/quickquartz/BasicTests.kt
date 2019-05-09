@@ -138,7 +138,7 @@ fun genQuickQuartzJobsWithTriggers(
             jobName = "$prefix-$i",
             jobGroup = "testJobGroup",
             jobClassName = jobClassName,
-            jobData = if (payload == null) null else payload,
+            jobData = payload,
             isDurable = true
         )
         val trigger = TriggerEntity(
@@ -147,7 +147,7 @@ fun genQuickQuartzJobsWithTriggers(
             triggerGroup = "testTriggerGroup",
             jobName = "$prefix-$i",
             jobGroup = "testJobGroup",
-            jobData = if (payload == null) null else payload
+            jobData = payload
         )
         put(detail, trigger)
     }

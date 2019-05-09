@@ -76,12 +76,12 @@ private class Json : ColumnType() {
     }
 
     override fun valueFromDB(value: Any): Any {
-        if (value !is PGobject) throw Error("value was $value of type ${value.javaClass}")
+        if (value !is PGobject) throw Exception("value was $value of type ${value.javaClass}")
 
         return try {
             gson.fromJson(value.value, typeOfHashMap)
         } catch (e: Exception) {
-            throw Error("Can't parse JSON: $value")
+            throw Exception("Can't parse JSON: $value", e)
         }
     }
 

@@ -20,8 +20,6 @@ import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.statements.BatchInsertStatement
 import org.quartz.JobDetail
 
-const val ONE_MiB = 1 * 1024 * 1024
-
 /**
  * schema
  */
