@@ -7,6 +7,7 @@ package com.salesforce.zero.quickquartz
 
 import com.google.common.truth.Truth.assertThat
 import com.salesforce.zero.quickquartz.QuickQuartzFiredTriggers.entryId
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -105,7 +106,7 @@ class EndToEndTests {
         verifyJobsAndTriggers(prefix)
 
         // when
-        val nextTriggers = quartzDb.acquireNextTriggers(Date().time, debug = true) // flapper alert! don't set a batch size here since this doesn't filter on our UUID prefix
+        val nextTriggers = quartzDb.acquireNextTriggers(Date().time, debug = true, tenantFilter = QuickQuartzTriggers.triggerGroup eq prefix)
 
         // then
         assertThat(nextTriggers).isNotEmpty()

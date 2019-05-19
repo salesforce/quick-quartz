@@ -84,7 +84,7 @@ class BasicTests {
 
 /**
  * Generates a map of regular quartz JobDetails to Triggers.
- * @param prefix each job key starts with the given prefix
+ * @param prefix each job key starts with the given prefix; also used as the triggerGroup (tenant)
  * @param numEntities the number of entities to generate
  * @param clazz the job type, LoggingJob by default
  * @param payload pluggable, but null by default.
@@ -106,7 +106,7 @@ fun genQuartzJobs(
 
         val triggerBuilder = TriggerBuilder.newTrigger()
             .forJob(job)
-            .withIdentity(job.key.name, "testGroup")
+            .withIdentity(job.key.name, prefix)
             .startNow()
             .endAt(Date.from(LocalDateTime.now().plusMinutes(1).toInstant(ZoneOffset.UTC)))
             .withSchedule(SimpleScheduleBuilder.simpleSchedule().withMisfireHandlingInstructionFireNow())

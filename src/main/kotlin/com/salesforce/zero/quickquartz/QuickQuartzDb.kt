@@ -6,8 +6,11 @@
 package com.salesforce.zero.quickquartz
 
 import com.salesforce.zero.quickquartz.QuickQuartzTriggers.nextFireTime
+import com.salesforce.zero.quickquartz.QuickQuartzTriggers.triggerGroup
 import com.salesforce.zero.quickquartz.QuickQuartzTriggers.triggerState
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.Op
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.and
@@ -64,14 +67,18 @@ class QuickQuartzDb(private val db: DataSource, private val instanceId: String =
      * - update triggerState to ACQUIRED
      * - insert into fired triggers table, with fired instanceId = this scheduler id
      */
-    fun acquireNextTriggers(noLaterThan: Long, batchSize: Int = 200, debug: Boolean = false) = transaction {
-
+    fun acquireNextTriggers(
+        noLaterThan: Long,
+        batchSize: Int = 200,
+        debug: Boolean = false,
+        tenantFilter: Op<Boolean> = triggerGroup eq triggerGroup
+    ) = transaction {
         if (debug) addLogger(StdOutSqlLogger)
 
         // acquire row locks optimistically on a batch of eligible triggers
         // TODO: should this filter out paused jobGroups/triggerGroups?
         val triggers = QuickQuartzTriggers
-            .selectForUpdateSkipLocked { ((triggerState eq TriggerState.WAITING.name) and (nextFireTime lessEq noLaterThan)) }
+            .selectForUpdateSkipLocked { ((triggerState eq TriggerState.WAITING.name) and (nextFireTime lessEq noLaterThan) and tenantFilter) }
             .limit(batchSize)
             .map { it.toTrigger() }
 
