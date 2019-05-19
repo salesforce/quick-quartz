@@ -24,13 +24,18 @@ import com.salesforce.zero.quickquartz.QuickQuartzTriggers.triggerType
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.statements.BatchInsertStatement
+import org.quartz.JobDataMap
 import org.quartz.Trigger
+import org.quartz.TriggerBuilder
+import org.quartz.spi.OperableTrigger
+import java.util.Date
 
 /**
  * the legal states a trigger row can be in
  */
 enum class TriggerState {
-    WAITING // that's all for now, folks!
+    WAITING,
+    ACQUIRED
 }
 
 /**
@@ -171,4 +176,28 @@ val toQuickQuartzTrigger: Trigger.() -> TriggerEntity = {
         misfireInstr = this.misfireInstruction,
         jobData = if (jobData == null) null else jobData as Map<String, String>
     )
+}
+
+/**
+ * TriggerEntity to quartz trigger
+ * TODO verify this works for simple repeatable triggers
+ * TODO verify this works for cron triggers
+ */
+fun TriggerEntity.toOperableTrigger(): OperableTrigger {
+    val trigger: Trigger = TriggerBuilder.newTrigger()
+        .withIdentity(this.triggerName, this.triggerGroup)
+        .forJob(this.jobName, this.jobGroup)
+        .withDescription(this.description)
+        .startAt(Date(this.startTime))
+        .endAt(Date(this.endTime))
+        .withPriority(this.priority ?: 5)
+        .modifiedByCalendar(this.calendarName)
+        .usingJobData(JobDataMap(this.jobData ?: mutableMapOf<String, String>()))
+        .build()
+
+    val t = trigger as OperableTrigger
+    t.nextFireTime = this.nextFireTime?.let { Date(it) }
+    t.previousFireTime = this.prevFireTime?.let { Date(it) }
+    t.misfireInstruction = this.misfireInstr ?: 1
+    return t
 }

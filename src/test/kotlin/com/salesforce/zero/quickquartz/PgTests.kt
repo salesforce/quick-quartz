@@ -67,7 +67,7 @@ class PgTests {
         autocommitting.isAutoCommit = true
 
         // QQDb should gack
-        val error = assertThrows<Error> { QuickQuartzDb(autocommitting.dataSource) }
+        val error = assertThrows<Error> { QuickQuartzDb(autocommitting.dataSource, "foo") }
         assertThat(error.message).isEqualTo("please turn off autocommit")
     }
 

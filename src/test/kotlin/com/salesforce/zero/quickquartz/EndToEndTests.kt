@@ -6,6 +6,7 @@
 package com.salesforce.zero.quickquartz
 
 import com.google.common.truth.Truth.assertThat
+import com.salesforce.zero.quickquartz.QuickQuartzFiredTriggers.entryId
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -13,17 +14,24 @@ import org.junit.jupiter.api.Test
 import org.quartz.Scheduler
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import java.net.InetAddress
+import java.time.LocalDate
+import java.util.Date
 import java.util.UUID
+import javax.sql.DataSource
 import kotlin.test.fail
 
 @SpringBootTest
 class EndToEndTests {
 
     @Autowired lateinit var scheduler: Scheduler
+    @Autowired lateinit var quickQuartz: QuickQuartz
+    @Autowired lateinit var db: DataSource
 
     @Test
     fun useScheduler() {
         assertThat(scheduler.schedulerName).isEqualTo("QuickQuartzScheduler")
+        assertThat(scheduler.schedulerInstanceId).startsWith(InetAddress.getLocalHost().hostName)
     }
 
     @Test
@@ -78,6 +86,55 @@ class EndToEndTests {
                 .map { it.toJob() to it.toTrigger() }
 
             assertThat(jobsAndTriggers.size).isEqualTo(expectedCount)
+
+            // all triggers have a legit nextFireTime
+            jobsAndTriggers.forEach {
+                val trigger = it.second
+                assertThat(trigger.nextFireTime).isGreaterThan(LocalDate.now().toEpochDay())
+            }
         }
+    }
+
+    @Test
+    fun `acquire next triggers from quartzdb`() {
+        // given
+        val prefix = UUID.randomUUID().toString()
+        val quartzJobs = genQuartzJobs(prefix)
+        val quartzDb = QuickQuartzDb(db, prefix)
+        scheduler.scheduleJobs(quartzJobs, false)
+        verifyJobsAndTriggers(prefix)
+
+        // when
+        val nextTriggers = quartzDb.acquireNextTriggers(Date().time, debug = true) // flapper alert! don't set a batch size here since this doesn't filter on our UUID prefix
+
+        // then
+        assertThat(nextTriggers).isNotEmpty()
+        assertThat(nextTriggers.filter { it.triggerName.startsWith(prefix) }).hasSize(TEST_DEFAULT_NUM_ENTITIES)
+
+        // should have inserted into the fired triggers table
+        transaction {
+            val fired = QuickQuartzFiredTriggers.select { entryId like "$prefix%" }.map { it.toFiredTrigger() }
+            assertThat(fired.size).isEqualTo(TEST_DEFAULT_NUM_ENTITIES)
+            fired.forEach {
+                assertThat(it.instanceName).isEqualTo(prefix)
+                assertThat(it.state).isEqualTo(TriggerState.ACQUIRED.name)
+            }
+        }
+
+        // oh and also check that converting it to a quartz trigger preserves the nextFireTime
+        assertThat(nextTriggers.first().toOperableTrigger().nextFireTime).isEqualTo(Date(nextTriggers.first().nextFireTime!!))
+    }
+
+    @Test
+    fun `acquire next triggers via qq`() {
+        // given
+        val batchSize = 2
+        val prefix = UUID.randomUUID().toString()
+        scheduler.scheduleJobs(genQuartzJobs(prefix), false)
+
+        // when
+        val operableTriggers = quickQuartz.acquireNextTriggers(System.currentTimeMillis(), batchSize, -1)
+
+        assertThat(operableTriggers).hasSize(batchSize)
     }
 }

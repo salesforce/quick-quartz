@@ -14,6 +14,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseDataSource
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.DependsOn
 import org.springframework.core.io.ClassPathResource
 import java.io.InputStream
 import java.util.Properties
@@ -55,15 +56,18 @@ class TestConfig {
             return quartzProps
         }
 
-    @Bean
-    fun scheduler(): Scheduler {
-        return QuickQuartzSchedulerFactory(testDb(), properties).scheduler
-    }
+    @Bean("scheduler")
+    fun scheduler(): Scheduler = factory().scheduler
 
     @Bean
-    fun sample(): SampleBean {
-        return SampleBean("zero")
-    }
+    @DependsOn("scheduler")
+    fun quickQuartz() = factory().quickQuartz()
+
+    @Bean
+    fun factory() = QuickQuartzSchedulerFactory(testDb(), properties)
+
+    @Bean
+    fun sample(): SampleBean = SampleBean("zero")
 }
 
 data class SampleBean(val name: String)
