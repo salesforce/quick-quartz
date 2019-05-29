@@ -26,17 +26,17 @@ import org.jetbrains.exposed.sql.statements.BatchInsertStatement
  * schema
  */
 object QuickQuartzFiredTriggers : Table("qrtz_fired_triggers") {
-    val schedName = varchar("sched_name", 120).primaryKey(0)
-    val entryId = varchar("entry_id", 95).primaryKey(1)
-    val triggerName = varchar("trigger_name", 200)
-    val triggerGroup = varchar("trigger_group", 200)
-    val instanceName = varchar("instance_name", 200)
+    val schedName = text("sched_name").primaryKey(0)
+    val entryId = text("entry_id").primaryKey(1)
+    val triggerName = text("trigger_name")
+    val triggerGroup = text("trigger_group")
+    val instanceName = text("instance_name")
     val firedTime = long("fired_time")
     val schedTime = long("sched_time")
     val priority = integer("priority")
-    val state = varchar("state", 16)
-    val jobName = varchar("job_name", 200).nullable()
-    val jobGroup = varchar("job_group", 200).nullable()
+    val state = text("state")
+    val jobName = text("job_name").nullable()
+    val jobGroup = text("job_group").nullable()
     val isNonConcurrent = bool("is_nonconcurrent").nullable()
     val requestsRecovery = bool("requests_recovery").nullable()
 }
