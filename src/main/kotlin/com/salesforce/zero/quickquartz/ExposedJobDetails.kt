@@ -24,11 +24,11 @@ import org.quartz.JobDetail
  * schema
  */
 object QuickQuartzJobDetails : Table("qrtz_job_details") {
-    val schedName = varchar("sched_name", 120).primaryKey(0)
-    val jobName = varchar("job_name", 200).primaryKey(1)
-    val jobGroup = varchar("job_group", 200).primaryKey(2)
-    val description = varchar("description", 250)
-    val jobClassName = varchar("job_class_name", 250)
+    val schedName = text("sched_name").primaryKey(0)
+    val jobName = text("job_name").primaryKey(1)
+    val jobGroup = text("job_group").primaryKey(2)
+    val description = text("description")
+    val jobClassName = text("job_class_name")
     val isDurable = bool("is_durable")
     val isNonConcurrent = bool("is_nonconcurrent")
     val isUpdateData = bool("is_update_data")

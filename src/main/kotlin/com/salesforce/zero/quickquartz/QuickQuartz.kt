@@ -35,7 +35,7 @@ class QuickQuartz : JobStore, TablePrefixAware {
      * Needs to be called prior to scheduler initialization
      */
     fun initializeQuickQuartzDb(dataSource: DataSource) {
-        this.db = QuickQuartzDb(dataSource)
+        this.db = QuickQuartzDb(dataSource, instanceId)
     }
 
     /**
@@ -375,8 +375,14 @@ class QuickQuartz : JobStore, TablePrefixAware {
      * milliseconds.
      * @see .releaseAcquiredTrigger
      */
-    override fun acquireNextTriggers(noLaterThan: Long, maxCount: Int, timeWindow: Long): MutableList<OperableTrigger> {
-        TODO("not implemented")
+    override fun acquireNextTriggers(noLaterThan: Long, maxCount: Int, timeWindow: Long): List<OperableTrigger> {
+        /**
+         * note: `maxCount` is usually expected to be the number of worker threads in quartz,
+         * so even though we are now comfortable acquiring a much higher number of triggers,
+         * the scheduler will allocate each one to a dedicated worker thread.. should be ok, will
+         * just take a minute to get through the batch one at a time? TODO verify and if so, ignore maxCount
+         */
+        return db.acquireNextTriggers(noLaterThan, batchSize = maxCount).map { it.toOperableTrigger() }
     }
 
     /**

@@ -24,13 +24,18 @@ import com.salesforce.zero.quickquartz.QuickQuartzTriggers.triggerType
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.statements.BatchInsertStatement
+import org.quartz.JobDataMap
 import org.quartz.Trigger
+import org.quartz.TriggerBuilder
+import org.quartz.spi.OperableTrigger
+import java.util.Date
 
 /**
  * the legal states a trigger row can be in
  */
 enum class TriggerState {
-    WAITING // that's all for now, folks!
+    WAITING,
+    ACQUIRED
 }
 
 /**
@@ -44,24 +49,24 @@ enum class TriggerTypes {
  * schema for the main Trigger entity
  */
 object QuickQuartzTriggers : Table("qrtz_triggers") {
-    val schedName = (varchar("sched_name", 120) references QuickQuartzJobDetails.schedName).primaryKey(0)
-    val triggerName = varchar("trigger_name", 200).primaryKey(1)
-    val triggerGroup = varchar("trigger_group", 200).primaryKey(2)
-    val jobName = varchar("job_name", 200) references QuickQuartzJobDetails.jobName
-    val jobGroup = varchar("job_group", 200) references QuickQuartzJobDetails.jobGroup
+    val schedName = (text("sched_name") references QuickQuartzJobDetails.schedName).primaryKey(0)
+    val triggerName = text("trigger_name").primaryKey(1)
+    val triggerGroup = text("trigger_group").primaryKey(2)
+    val jobName = text("job_name") references QuickQuartzJobDetails.jobName
+    val jobGroup = text("job_group") references QuickQuartzJobDetails.jobGroup
 
-    val description = varchar("description", 250).nullable()
+    val description = text("description").nullable()
     val nextFireTime = long("next_fire_time").nullable()
     val prevFireTime = long("prev_fire_time").nullable()
     val priority = integer("priority").nullable()
 
     // TODO enumeration for trigger state?
-    val triggerState = varchar("trigger_state", 16)
-    val triggerType = varchar("trigger_type", 8)
+    val triggerState = text("trigger_state")
+    val triggerType = text("trigger_type")
     val startTime = long("start_time")
     val endTime = long("end_time")
 
-    val calendarName = varchar("calendar_name", 200).nullable()
+    val calendarName = text("calendar_name").nullable()
     val misfireInstr = integer("misfire_instr").nullable()
     val jobData = jsonb<Map<String, String>>("job_data").nullable()
 }
@@ -171,4 +176,28 @@ val toQuickQuartzTrigger: Trigger.() -> TriggerEntity = {
         misfireInstr = this.misfireInstruction,
         jobData = if (jobData == null) null else jobData as Map<String, String>
     )
+}
+
+/**
+ * TriggerEntity to quartz trigger
+ * TODO verify this works for simple repeatable triggers
+ * TODO verify this works for cron triggers
+ */
+fun TriggerEntity.toOperableTrigger(): OperableTrigger {
+    val trigger: Trigger = TriggerBuilder.newTrigger()
+        .withIdentity(this.triggerName, this.triggerGroup)
+        .forJob(this.jobName, this.jobGroup)
+        .withDescription(this.description)
+        .startAt(Date(this.startTime))
+        .endAt(Date(this.endTime))
+        .withPriority(this.priority ?: 5)
+        .modifiedByCalendar(this.calendarName)
+        .usingJobData(JobDataMap(this.jobData ?: mutableMapOf<String, String>()))
+        .build()
+
+    val t = trigger as OperableTrigger
+    t.nextFireTime = this.nextFireTime?.let { Date(it) }
+    t.previousFireTime = this.prevFireTime?.let { Date(it) }
+    t.misfireInstruction = this.misfireInstr ?: 1
+    return t
 }
