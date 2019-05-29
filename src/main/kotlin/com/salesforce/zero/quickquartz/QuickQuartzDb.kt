@@ -10,6 +10,7 @@ import com.salesforce.zero.quickquartz.QuickQuartzTriggers.triggerGroup
 import com.salesforce.zero.quickquartz.QuickQuartzTriggers.triggerState
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Op
+import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
@@ -18,6 +19,7 @@ import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import java.sql.ResultSet
+import java.util.UUID
 import javax.sql.DataSource
 
 /**
@@ -77,8 +79,10 @@ class QuickQuartzDb(private val db: DataSource, private val instanceId: String =
 
         // acquire row locks optimistically on a batch of eligible triggers
         // TODO: should this filter out paused jobGroups/triggerGroups?
+        // TODO: make sure an appropriate index exists (triggerGroup, triggerState, nextFireTime)
         val triggers = QuickQuartzTriggers
             .selectForUpdateSkipLocked { ((triggerState eq TriggerState.WAITING.name) and (nextFireTime lessEq noLaterThan) and tenantFilter) }
+            .orderBy(nextFireTime, SortOrder.ASC)
             .limit(batchSize)
             .map { it.toTrigger() }
 
@@ -94,7 +98,7 @@ class QuickQuartzDb(private val db: DataSource, private val instanceId: String =
         val firedTime = System.currentTimeMillis()
         val firedTriggers = triggers.map {
             FiredTriggerEntity(
-                entryId = it.triggerName,
+                entryId = UUID.randomUUID().toString(), // UUID instead of triggerName because we don't want to assume a 1-1 relationship between triggers and fired triggers (think: repeatable triggers)
                 triggerName = it.triggerName,
                 triggerGroup = it.triggerGroup,
                 firedTime = firedTime,
@@ -103,7 +107,7 @@ class QuickQuartzDb(private val db: DataSource, private val instanceId: String =
                 state = TriggerState.ACQUIRED.name,
                 jobName = it.jobName,
                 jobGroup = it.jobGroup,
-                instanceName = instanceId
+                instanceName = instanceId // remember which scheduler claimed this work
             )
         }
 

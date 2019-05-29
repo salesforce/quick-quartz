@@ -6,7 +6,7 @@
 package com.salesforce.zero.quickquartz
 
 import com.google.common.truth.Truth.assertThat
-import com.salesforce.zero.quickquartz.QuickQuartzFiredTriggers.entryId
+import com.salesforce.zero.quickquartz.QuickQuartzFiredTriggers.triggerGroup
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
@@ -114,7 +114,7 @@ class EndToEndTests {
 
         // should have inserted into the fired triggers table
         transaction {
-            val fired = QuickQuartzFiredTriggers.select { entryId like "$prefix%" }.map { it.toFiredTrigger() }
+            val fired = QuickQuartzFiredTriggers.select { triggerGroup eq "$prefix" }.map { it.toFiredTrigger() }
             assertThat(fired.size).isEqualTo(TEST_DEFAULT_NUM_ENTITIES)
             fired.forEach {
                 assertThat(it.instanceName).isEqualTo(prefix)
