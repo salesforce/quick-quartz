@@ -8,6 +8,7 @@ package com.salesforce.zero.quickquartz
 import com.salesforce.zero.quickquartz.QuickQuartzTriggers.nextFireTime
 import com.salesforce.zero.quickquartz.QuickQuartzTriggers.triggerGroup
 import com.salesforce.zero.quickquartz.QuickQuartzTriggers.triggerState
+import io.micrometer.core.instrument.Metrics
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.SortOrder
@@ -26,7 +27,6 @@ import javax.sql.DataSource
  * One stop shop for all db behavior
  */
 class QuickQuartzDb(private val db: DataSource, private val instanceId: String = "defaultSchedulerInstanceId") {
-
     init {
         db.connection.use {
             if (it.autoCommit) throw Error("please turn off autocommit")
@@ -61,6 +61,11 @@ class QuickQuartzDb(private val db: DataSource, private val instanceId: String =
 
             // insert child rows
             QuickQuartzTriggers.batchInsert(data = qqTriggers, body = batchInsertTriggers)
+
+            // increment count metric of jobs inserted
+            Metrics.counter("num_jobs_inserted").increment(qqJobs.count().toDouble())
+            // increment count metric of triggers inserted
+            Metrics.counter("num_triggers_inserted").increment(qqTriggers.count().toDouble())
         }
     }
 
@@ -115,6 +120,9 @@ class QuickQuartzDb(private val db: DataSource, private val instanceId: String =
         QuickQuartzFiredTriggers.batchInsert(firedTriggers, body = batchInsertFiredTriggers).map {
             if (debug) println(it.toFiredTrigger())
         }
+
+        // increment count metric of triggers inserted
+        Metrics.counter("num_triggers_fired").increment(firedTriggers.size.toDouble())
 
         // return the triggers we acquired
         triggers
