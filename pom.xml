@@ -19,7 +19,7 @@
 		<HikariCP.version>3.3.1</HikariCP.version>
 		<liquibase-core.version>3.6.3</liquibase-core.version>
 		<h2.version>1.4.199</h2.version>
-        <junit-jupiter.version>5.5.0</junit-jupiter.version>
+        <junit-jupiter.version>5.5.2</junit-jupiter.version>
 		<truth.version>1.0</truth.version>
 		<spotless-maven-plugin.version>1.23.1</spotless-maven-plugin.version>
 		<ktlint.version>0.32.0</ktlint.version>
