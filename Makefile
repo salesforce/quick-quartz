@@ -10,8 +10,5 @@ spotless-apply:
 test:
 	mvn -s ${SETTINGS_FILE} test jacoco:report
 
-view-codecov-report:
-	open target/site/jacoco/index.html
-
 version-display-updates:
 	mvn -s ${SETTINGS_FILE} versions:display-dependency-updates
