@@ -4,11 +4,8 @@
 name: Maven Package
 
 on:
-  # Trigger the workflow on push or pull request,
+  # Trigger the workflow on pull requests,
   # but only for the master branch
-  push:
-    branches:
-      - master
   pull_request:
     branches:
       - master
