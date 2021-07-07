@@ -1,6 +1,0 @@
-language: java
-jdk: openjdk11
-install:
-  - mvn -s settings.xml spotless:check test-compile -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-script:
-  - mvn -s settings.xml test jacoco:report
