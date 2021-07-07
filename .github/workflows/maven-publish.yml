@@ -4,8 +4,16 @@
 name: Maven Package
 
 on:
+  # Trigger the workflow on pull requests,
+  # but only for the master branch
+  pull_request:
+    branches:
+      - master
+  # Also trigger on page_build, as well as release created events
+  page_build:
   release:
-    types: [created]
+    types: # This configuration does not affect the page_build event above
+      - created
 
 jobs:
   build:
@@ -26,9 +34,9 @@ jobs:
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn -s mysettings.xml -B package --file pom.xml
 
-    - name: Publish to GitHub Packages Apache Maven
-      run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
+#    - name: Publish to GitHub Packages Apache Maven
+#      run: mvn -s $GITHUB_WORKSPACE/settings.xml deploy
+#      env:
+#        GITHUB_TOKEN: ${{ github.token }}
