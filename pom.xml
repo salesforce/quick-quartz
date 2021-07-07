@@ -26,7 +26,7 @@
 		<jacoco-maven-plugin.version>0.8.7</jacoco-maven-plugin.version>
 		<kotlin-maven-plugin.version>1.3.61</kotlin-maven-plugin.version>
 		<skip.it>false</skip.it>
-		<maven-failsafe-plugin.version>3.0.0-M4</maven-failsafe-plugin.version>
+		<maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
 		<maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
 		<otj-pg-embedded.version>0.13.3</otj-pg-embedded.version>
 		<exposed.version>0.17.13</exposed.version>
