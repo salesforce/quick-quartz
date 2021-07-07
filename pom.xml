@@ -28,7 +28,7 @@
 		<skip.it>false</skip.it>
 		<maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
 		<maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
-		<otj-pg-embedded.version>0.13.3</otj-pg-embedded.version>
+		<otj-pg-embedded.version>0.13.4</otj-pg-embedded.version>
 		<exposed.version>0.17.13</exposed.version>
 		<spring-boot-starter-test.version>2.2.2.RELEASE</spring-boot-starter-test.version>
 		<spring-jdbc.version>5.2.2.RELEASE</spring-jdbc.version>
