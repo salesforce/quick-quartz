@@ -1,3 +1,6 @@
+![build](https://github.com/github/docs/actions/workflows/maven-publish.yml/badge.svg)
+
+
 # quick-quartz
 
 A concurrent JDBC job store implementation for [Quartz](https://github.com/quartz-scheduler/quartz).
