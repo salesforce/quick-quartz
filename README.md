@@ -1,4 +1,4 @@
-![build](https://github.com/github/docs/actions/workflows/maven-publish.yml/badge.svg)
+![build](https://github.com/salesforce/quick-quartz/actions/workflows/maven-publish.yml/badge.svg)
 
 
 # quick-quartz
